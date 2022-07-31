@@ -6,16 +6,9 @@ interface IJsonFile {
   client_camelcase: string;
   db_instance_name: string;
   client_region: string;
-  client_vpc_id: string;
-  client_vpc_subnet_id: string;
   awsaccess_key: string;
   awssecret_key: string;
-  subnet_a_id: string;
-  subnet_b_id: string;
-  subnet_c_id: string;
   db_master_user: string;
-  host_zone_id: string;
-  base_dns_name: string;
 }
 
 const requiredFields = [
@@ -25,6 +18,7 @@ const requiredFields = [
   "client_region",
   "awsaccess_key",
   "awssecret_key",
+  "db_master_user",
 ];
 
 const minLength = 4;
