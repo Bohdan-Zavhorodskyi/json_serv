@@ -2,14 +2,20 @@ import { exec } from "child_process";
 import { Request, Response } from "express";
 import path from "path";
 import fileUpload from "express-fileupload";
+import { StatusCodes } from "http-status-codes";
 
 import { validateJSON } from "../../helpers/validation";
 import { removeFile } from "../../helpers/fileService";
+import { failResponse } from "../../helpers/responses/baseResponses";
 
-export const createFile = async (req: Request, res: Response) => {
+export const checkFile = async (req: Request, res: Response) => {
   try {
     if (!req.files || Object.keys(req.files).length === 0) {
-      return res.status(400).send("No files were uploaded.");
+      return failResponse(
+        res,
+        StatusCodes.BAD_REQUEST,
+        "No files were uploaded."
+      );
     }
     const fileFieldName = Object.keys(req.files)[0];
 
@@ -19,7 +25,7 @@ export const createFile = async (req: Request, res: Response) => {
 
     await validateJSON(res, bufferFileData);
 
-    sampleFile.mv(uploadPath);
+    await sampleFile.mv(uploadPath);
 
     const cmd = `cd ../ && docker-compose run ansible ansible-playbook -i inventory.ini playbooks/infra_full.yml - e "uploads/${sampleFile}" --tags "sometag"`;
 
@@ -28,12 +34,16 @@ export const createFile = async (req: Request, res: Response) => {
     executionCommand.on("exit", (code) => {
       if (code === 1) {
         removeFile(uploadPath);
-        throw new Error("Something went wrong on the command execution");
+        return res
+          .status(StatusCodes.INTERNAL_SERVER_ERROR)
+          .send({ message: "Something went wrong on the command execution" });
       }
 
-      return res.status(200).send("File uploaded to " + uploadPath);
+      return res.status(StatusCodes.OK).send("File uploaded to " + uploadPath);
     });
   } catch (error) {
-    return res.status(500).send({ message: error.message });
+    return res
+      .status(StatusCodes.INTERNAL_SERVER_ERROR)
+      .send({ message: error.message });
   }
 };

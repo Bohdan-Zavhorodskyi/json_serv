@@ -1,6 +1,8 @@
 import { Response } from "express";
 import StatusCodes from "http-status-codes";
 
+import { failResponse } from "./responses/baseResponses";
+
 interface IJsonFile {
   client_name: string;
   client_camelcase: string;
@@ -42,27 +44,47 @@ export const validateJSON = async (res: Response, json: string) => {
       throw new Error("JSON is not a object.");
     }
 
-    const objectValues = Object.values(parsedJson);
+    const objectValues = Object.entries(parsedJson);
     const objectKeys = Object.keys(parsedJson);
 
-    await Promise.all(
-      requiredFields.map((item) => {
-        if (!objectKeys.includes(item)) {
-          throw new Error(`The next field is required in object => ${item}`);
-        }
-      })
-    );
+    const requiredFieldsErrors: string[] = [];
+    const validationFieldsErrors: string[] = [];
 
-    await Promise.all(
-      objectValues.map((value) => {
-        if (value < minLength || typeof value !== defaultValueType) {
-          throw new Error(
-            `The next field is not passed validation should be min_length: ${minLength}`
-          );
-        }
-      })
-    );
+    requiredFields.map((item) => {
+      if (!objectKeys.includes(item)) {
+        requiredFieldsErrors.push(`${item} field is required in object`);
+      }
+    });
+
+    objectValues.map(([key, value]) => {
+      if (value < minLength || typeof value !== defaultValueType) {
+        validationFieldsErrors.push(
+          `field ${key} should be min_length: ${minLength}`
+        );
+      }
+    });
+
+    if (requiredFieldsErrors.length && validationFieldsErrors.length) {
+      return failResponse(res, StatusCodes.BAD_REQUEST, {
+        requiredFieldsErrors: requiredFieldsErrors.map((item) => item),
+        validationErrors: validationFieldsErrors.map((item) => item),
+      });
+    }
+
+    if (requiredFieldsErrors.length) {
+      return failResponse(res, StatusCodes.BAD_REQUEST, {
+        requiredFieldsErrors: requiredFieldsErrors.map((item) => item),
+      });
+    }
+
+    if (validationFieldsErrors.length) {
+      return failResponse(res, StatusCodes.BAD_REQUEST, {
+        validationErrors: validationFieldsErrors.map((item) => item),
+      });
+    }
   } catch (error) {
-    return res.status(StatusCodes.BAD_REQUEST).send({ message: error.message });
+    return failResponse(res, StatusCodes.BAD_REQUEST, {
+      message: error.message,
+    });
   }
 };
