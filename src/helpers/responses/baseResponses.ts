@@ -6,7 +6,9 @@ export const successResponse = (
   httpCode: StatusCodes = StatusCodes.OK,
   data = {}
 ) => {
-  res.status(httpCode).send(data);
+  const dataObject = typeof data === "object" ? data : { message: data };
+
+  res.status(httpCode).send(dataObject);
 };
 
 export const failResponse = (

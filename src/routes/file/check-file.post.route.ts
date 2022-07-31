@@ -6,7 +6,10 @@ import { StatusCodes } from "http-status-codes";
 
 import { validateJSON } from "../../helpers/validation";
 import { removeFile } from "../../helpers/fileService";
-import { failResponse } from "../../helpers/responses/baseResponses";
+import {
+  failResponse,
+  successResponse,
+} from "../../helpers/responses/baseResponses";
 
 export const checkFile = async (req: Request, res: Response) => {
   try {
@@ -34,16 +37,20 @@ export const checkFile = async (req: Request, res: Response) => {
     executionCommand.on("exit", (code) => {
       if (code === 1) {
         removeFile(uploadPath);
-        return res
-          .status(StatusCodes.INTERNAL_SERVER_ERROR)
-          .send({ message: "Something went wrong on the command execution" });
+        return failResponse(
+          res,
+          StatusCodes.INTERNAL_SERVER_ERROR,
+          "Something went wrong on the command execution"
+        );
       }
 
-      return res.status(StatusCodes.OK).send("File uploaded to " + uploadPath);
+      return successResponse(
+        res,
+        StatusCodes.OK,
+        "File uploaded to " + uploadPath
+      );
     });
   } catch (error) {
-    return res
-      .status(StatusCodes.INTERNAL_SERVER_ERROR)
-      .send({ message: error.message });
+    return failResponse(res, StatusCodes.INTERNAL_SERVER_ERROR, error.message);
   }
 };
