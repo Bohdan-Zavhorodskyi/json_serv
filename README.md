@@ -6,7 +6,7 @@ Need to create a server that will take the JSON file as a prop. This file should
 
 ############################################
 
-What are included:
+## What is included:
 
 - base project architecture;
 - typescript features support + tsconfig.json;
