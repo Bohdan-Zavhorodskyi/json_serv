@@ -1,16 +1,20 @@
 {
   "compilerOptions": {
-    "module": "commonjs",
+    "target": "ES6",
+    "lib": ["ES2020"],
+    "module": "CommonJS",
+    "moduleResolution": "Node",
+    "typeRoots": ["./types"],
+    "rootDir": "./src",
+    "experimentalDecorators": true,
     "esModuleInterop": true,
-    "target": "es6",
-    "noImplicitAny": true,
-    "moduleResolution": "node",
-    "sourceMap": true,
-    "outDir": "dist",
-    "baseUrl": ".",
-    "paths": {
-      "*": ["node_modules/*"]
-    }
-  },
-  "include": ["src/*"]
+    "resolveJsonModule": true,
+    "noImplicitAny": false,
+    "allowJs": true,
+    "plugins": [
+      {
+        "name": "typescript-tslint-plugin"
+      }
+    ]
+  }
 }
